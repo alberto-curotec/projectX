@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClickUp — Time by Developer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset & Base ─────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:          #0f1117;
+    --surface:     #171b26;
+    --surface2:    #1e2333;
+    --border:      #2a2f42;
+    --border2:     #343a50;
+    --text:        #e8eaf0;
+    --muted:       #6b7394;
+    --accent:      #4f8ef7;
+    --accent-dim:  #1e3160;
+
+    --green:       #22c55e;
+    --green-bg:    #0d2a1a;
+    --yellow:      #eab308;
+    --yellow-bg:   #2a2200;
+    --red:         #ef4444;
+    --red-bg:      #2a0d0d;
+    --gray:        #4b5168;
+    --gray-bg:     #181c27;
+
+    --panel-w:     560px;
+    --header-h:    64px;
+    --radius:      8px;
+    --radius-lg:   12px;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* ── Layout ───────────────────────────────────────────────── */
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* ── Header ───────────────────────────────────────────────── */
+  header {
+    height: var(--header-h);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 20px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+  }
+
+  .logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .divider-v {
+    width: 1px;
+    height: 24px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  /* Week nav */
+  .week-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .week-nav button {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s, border-color .15s;
+  }
+  .week-nav button:hover { background: var(--border); border-color: var(--border2); }
+
+  #weekLabel {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    min-width: 180px;
+    text-align: center;
+    letter-spacing: 0.03em;
+  }
+
+  .btn-today {
+    background: var(--accent-dim) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+    font-size: 11px !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-weight: 500 !important;
+    width: auto !important;
+    padding: 0 10px !important;
+    letter-spacing: 0.04em;
+  }
+
+  /* View toggle */
+  .view-toggle {
+    display: flex;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-left: auto;
+  }
+
+  .view-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 6px 14px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    white-space: nowrap;
+  }
+  .view-toggle button.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* Refresh */
+  .btn-refresh {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background .15s, color .15s;
+    white-space: nowrap;
+  }
+  .btn-refresh:hover { background: var(--border); color: var(--text); }
+  .btn-refresh.loading { opacity: .5; pointer-events: none; }
+
+  /* ── Main ─────────────────────────────────────────────────── */
+  main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── Overview Table Area ──────────────────────────────────── */
+  #overview {
+    flex: 1;
+    overflow: auto;
+    padding: 24px;
+    transition: width .3s;
+  }
+
+  /* ── Table ────────────────────────────────────────────────── */
+  .table-wrap {
+    min-width: 780px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  thead th {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  thead th:first-child { text-align: left; min-width: 200px; border-radius: var(--radius) 0 0 0; }
+  thead th:last-child  { border-radius: 0 var(--radius) 0 0; }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background .12s;
+  }
+  tbody tr:hover td { background: var(--surface2) !important; }
+  tbody tr.selected td { background: var(--accent-dim) !important; }
+  tbody tr.selected td { border-bottom-color: #2a3a5c !important; }
+
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    background: var(--surface);
+    transition: background .12s;
+  }
+  tbody td:first-child { text-align: left; }
+
+  /* Developer name cell */
+  .dev-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+  .dev-name {
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .star-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 2px;
+    margin-left: auto;
+    opacity: .35;
+    transition: opacity .15s, transform .15s;
+    flex-shrink: 0;
+  }
+  .star-btn:hover { opacity: .8; transform: scale(1.2); }
+  .star-btn.active { opacity: 1; }
+
+  /* Hour cells */
+  .hour-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 5px 10px;
+    display: inline-block;
+    min-width: 52px;
+  }
+
+  .cell-green  { background: var(--green-bg);  color: var(--green);  }
+  .cell-yellow { background: var(--yellow-bg); color: var(--yellow); }
+  .cell-red    { background: var(--red-bg);    color: var(--red);    }
+  .cell-gray   { background: var(--gray-bg);   color: var(--gray);   }
+  .cell-empty  { color: var(--muted); }
+
+  .total-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    min-width: 58px;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 80px 24px;
+    color: var(--muted);
+  }
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: .5; }
+  .empty-state p { font-size: 14px; }
+
+  /* ── Detail Panel ─────────────────────────────────────────── */
+  #panel {
+    width: 0;
+    overflow: hidden;
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    transition: width .3s cubic-bezier(.4,0,.2,1);
+    flex-shrink: 0;
+  }
+  #panel.open {
+    width: var(--panel-w);
+    overflow: visible;
+  }
+
+  .panel-inner {
+    width: var(--panel-w);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .panel-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .panel-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+  .panel-title { flex: 1; }
+  .panel-title h3 { font-size: 15px; font-weight: 600; }
+  .panel-title span {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+
+  .panel-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+    transition: color .15s;
+  }
+  .panel-close:hover { color: var(--text); }
+
+  /* Panel entries */
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+  }
+
+  /* Day group */
+  .day-group {
+    border-bottom: 1px solid var(--border);
+  }
+  .day-group-header {
+    padding: 10px 20px;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  .day-group-header .day-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .day-group-header .day-total {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  /* Entry row */
+  .entry-row {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: start;
+  }
+  .entry-row:last-child { border-bottom: none; }
+
+  .entry-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  .task-id {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    background: var(--accent-dim);
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .task-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .entry-duration {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+
+  /* Editable fields */
+  .entry-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .field-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    min-width: 38px;
+    flex-shrink: 0;
+  }
+
+  .field-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 5px;
+    flex: 1;
+    transition: border-color .15s;
+    resize: none;
+  }
+  .field-input:focus { outline: none; border-color: var(--accent); }
+  .field-input.dirty { border-color: var(--yellow); }
+
+  .tags-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 5px;
+    flex: 1;
+    transition: border-color .15s;
+  }
+  .tags-input:focus { outline: none; border-color: var(--accent); }
+  .tags-input.dirty { border-color: var(--yellow); }
+
+  /* Billable toggle */
+  .billable-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .toggle {
+    position: relative;
+    width: 34px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+  .toggle input { display: none; }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--border2);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s;
+    pointer-events: none;
+  }
+  .toggle input:checked ~ .toggle-track { background: var(--green); }
+  .toggle input:checked ~ .toggle-thumb { transform: translateX(16px); }
+
+  .billable-label { font-size: 11px; color: var(--muted); }
+
+  /* Save button */
+  .entry-actions {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-save {
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    opacity: .4;
+    pointer-events: none;
+    transition: opacity .15s, background .15s;
+    letter-spacing: 0.03em;
+  }
+  .btn-save.enabled { opacity: 1; pointer-events: auto; }
+  .btn-save.enabled:hover { background: #3a7be0; }
+  .btn-save.saving { opacity: .6; pointer-events: none; }
+
+  .save-status {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    display: none;
+  }
+  .save-status.ok  { color: var(--green); display: inline; }
+  .save-status.err { color: var(--red);   display: inline; }
+
+  /* ── Loading overlay ──────────────────────────────────────── */
+  #loading {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,17,23,.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    gap: 16px;
+    backdrop-filter: blur(4px);
+  }
+  #loading.hidden { display: none; }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Toast ────────────────────────────────────────────────── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    z-index: 200;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform .25s, opacity .25s;
+    max-width: 320px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.err  { border-color: var(--red); color: var(--red); }
+
+  /* ── Scrollbars ───────────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ── Panel loading ────────────────────────────────────────── */
+  .panel-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    padding: 60px;
+    color: var(--muted);
+  }
+  .panel-loading .spinner { width: 24px; height: 24px; border-width: 2px; }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- Header -->
+  <header>
+    <span class="logo">CU / TIME</span>
+    <div class="divider-v"></div>
+
+    <div class="week-nav">
+      <button id="btnPrev" title="Previous week">&#8249;</button>
+      <span id="weekLabel">—</span>
+      <button id="btnNext" title="Next week">&#8250;</button>
+      <button class="btn-today" id="btnToday">TODAY</button>
+    </div>
+
+    <div class="view-toggle">
+      <button id="btnAll"  class="active" onclick="setView('all')">All</button>
+      <button id="btnFavs"             onclick="setView('favs')">⭐ Favorites</button>
+    </div>
+
+    <button class="btn-refresh" id="btnRefresh" onclick="loadWeek()">
+      <span>↺</span> Refresh
+    </button>
+  </header>
+
+  <!-- Main -->
+  <main>
+    <!-- Overview -->
+    <div id="overview">
+      <div class="table-wrap">
+        <table id="mainTable">
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div id="emptyState" class="empty-state hidden">
+          <div class="icon">📭</div>
+          <p id="emptyMsg">No time entries found for this week.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div id="panel">
+      <div class="panel-inner">
+        <div class="panel-header" id="panelHeader">
+          <div class="panel-avatar" id="panelAvatar"></div>
+          <div class="panel-title">
+            <h3 id="panelName">Developer</h3>
+            <span id="panelWeek"></span>
+          </div>
+          <button class="panel-close" onclick="closePanel()">×</button>
+        </div>
+        <div class="panel-body" id="panelBody"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Fetching time entries…</div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+const DAY_KEYS  = ['mon','tue','wed','thu','fri','sat','sun'];
+const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+let state = {
+  weekStartMs:   mondayOfWeek(new Date()).getTime(),
+  view:          'all',         // 'all' | 'favs'
+  weekData:      null,          // { members, byUser, targets, weekStartMs }
+  selectedUserId: null,
+  panelEntries:  [],
+  favorites:     [],
+};
+
+// ── Boot ───────────────────────────────────────────────────────
+document.getElementById('btnPrev').addEventListener('click', () => shiftWeek(-1));
+document.getElementById('btnNext').addEventListener('click', () => shiftWeek(+1));
+document.getElementById('btnToday').addEventListener('click', () => {
+  state.weekStartMs = mondayOfWeek(new Date()).getTime();
+  loadWeek();
+});
+
+loadWeek();
+
+// ── Week helpers ───────────────────────────────────────────────
+function mondayOfWeek(d) {
+  const day = d.getDay(); // 0=Sun
+  const diff = (day === 0) ? -6 : 1 - day;
+  const mon = new Date(d);
+  mon.setDate(d.getDate() + diff);
+  mon.setHours(0,0,0,0);
+  return mon;
+}
+
+function shiftWeek(delta) {
+  state.weekStartMs += delta * 7 * 24 * 60 * 60 * 1000;
+  loadWeek();
+}
+
+function formatWeekLabel(startMs) {
+  const s = new Date(startMs);
+  const e = new Date(startMs + 6 * 24 * 60 * 60 * 1000);
+  const fmt = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  return fmt(s) + ' – ' + fmt(e) + ', ' + e.getFullYear();
+}
+
+function formatDayHeader(startMs, idx) {
+  const d = new Date(startMs + idx * 24 * 60 * 60 * 1000);
+  return DAY_NAMES[idx] + ' ' + d.getDate();
+}
+
+// ── Load week ──────────────────────────────────────────────────
+function loadWeek() {
+  showLoading('Fetching time entries…');
+  document.getElementById('weekLabel').textContent = formatWeekLabel(state.weekStartMs);
+  document.getElementById('btnRefresh').classList.add('loading');
+
+  google.script.run
+    .withSuccessHandler(data => {
+      state.weekData  = data;
+      state.favorites = data.members.filter(m => m.isFavorite).map(m => m.id);
+      hideLoading();
+      document.getElementById('btnRefresh').classList.remove('loading');
+      renderTable();
+      if (state.selectedUserId) {
+        openPanel(state.selectedUserId, true);
+      }
+    })
+    .withFailureHandler(err => {
+      hideLoading();
+      document.getElementById('btnRefresh').classList.remove('loading');
+      showToast('Error: ' + err.message, true);
+    })
+    .getWeekData(state.weekStartMs);
+}
+
+// ── Render table ───────────────────────────────────────────────
+function renderTable() {
+  const { members, byUser, targets, weekStartMs } = state.weekData;
+
+  // Head
+  const head = document.getElementById('tableHead');
+  let headHtml = '<tr><th>Developer</th>';
+  DAY_KEYS.forEach((_, i) => {
+    headHtml += `<th>${formatDayHeader(weekStartMs, i)}</th>`;
+  });
+  headHtml += '<th>Total</th></tr>';
+  head.innerHTML = headHtml;
+
+  // Filter members
+  let visible = members;
+  if (state.view === 'favs') {
+    visible = members.filter(m => m.isFavorite);
+  } else {
+    // All view: show members who have time OR are favorites
+    visible = members.filter(m => m.isFavorite || (byUser[m.id] && byUser[m.id].total > 0));
+  }
+
+  const body = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+
+  if (visible.length === 0) {
+    body.innerHTML = '';
+    empty.classList.remove('hidden');
+    document.getElementById('emptyMsg').textContent =
+      state.view === 'favs'
+        ? 'No favorites set. Star developers in the All view.'
+        : 'No time entries found for this week.';
+    return;
+  }
+
+  empty.classList.add('hidden');
+
+  // Sort: favorites first, then alphabetical
+  visible.sort((a, b) => {
+    if (a.isFavorite && !b.isFavorite) return -1;
+    if (!a.isFavorite && b.isFavorite) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  let html = '';
+  visible.forEach(m => {
+    const u = byUser[m.id] || { mon:0,tue:0,wed:0,thu:0,fri:0,sat:0,sun:0,total:0,entries:[] };
+    const isSelected = m.id === state.selectedUserId;
+    html += `<tr data-uid="${m.id}" class="${isSelected ? 'selected' : ''}" onclick="openPanel('${m.id}')">`;
+
+    // Developer cell
+    const avatarHtml = m.avatar
+      ? `<img src="${m.avatar}" alt="">`
+      : m.initials;
+    html += `<td>
+      <div class="dev-cell">
+        <div class="avatar">${avatarHtml}</div>
+        <span class="dev-name">${esc(m.name)}</span>
+        <button class="star-btn ${m.isFavorite ? 'active' : ''}"
+          onclick="toggleFav(event,'${m.id}')"
+          title="${m.isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
+          ${m.isFavorite ? '⭐' : '☆'}
+        </button>
+      </div>
+    </td>`;
+
+    // Day cells
+    const startMs = state.weekData.weekStartMs;
+    DAY_KEYS.forEach((key, idx) => {
+      const ms   = u[key] || 0;
+      const hrs  = ms / 3600000;
+      const date = new Date(startMs + idx * 24 * 60 * 60 * 1000);
+      const isWeekend = (idx === 5 || idx === 6);
+      html += `<td>${hourCell(hrs, isWeekend)}</td>`;
+    });
+
+    // Total cell
+    const totalHrs = u.total / 3600000;
+    html += `<td>${totalCell(totalHrs, targets.week)}</td>`;
+    html += '</tr>';
+  });
+
+  body.innerHTML = html;
+}
+
+function hourCell(hrs, isWeekend) {
+  if (hrs === 0) {
+    if (isWeekend) return `<span class="hour-cell cell-empty">—</span>`;
+    return `<span class="hour-cell cell-gray">0h</span>`;
+  }
+  const label = hrs.toFixed(1) + 'h';
+  if (isWeekend) return `<span class="hour-cell cell-empty">${label}</span>`;
+  let cls;
+  if (hrs >= 7 && hrs <= 9)       cls = 'cell-green';
+  else if (hrs >= 4 && hrs < 7)   cls = 'cell-yellow';
+  else if (hrs > 9 && hrs <= 10)  cls = 'cell-yellow';
+  else                            cls = 'cell-red';
+  return `<span class="hour-cell ${cls}">${label}</span>`;
+}
+
+function totalCell(hrs, target) {
+  const label = hrs.toFixed(1) + 'h';
+  if (hrs === 0) return `<span class="total-cell cell-gray">${label}</span>`;
+  let cls;
+  if (hrs >= target * 0.9 && hrs <= target * 1.1)  cls = 'cell-green';
+  else if (hrs >= target * 0.6 && hrs < target * 0.9) cls = 'cell-yellow';
+  else if (hrs > target * 1.1 && hrs <= target * 1.25) cls = 'cell-yellow';
+  else cls = 'cell-red';
+  return `<span class="total-cell ${cls}">${label}</span>`;
+}
+
+// ── Favorites ──────────────────────────────────────────────────
+function toggleFav(event, userId) {
+  event.stopPropagation();
+  google.script.run
+    .withSuccessHandler(newFavs => {
+      state.favorites = newFavs;
+      // Update member isFavorite in weekData
+      if (state.weekData) {
+        state.weekData.members = state.weekData.members.map(m => ({
+          ...m,
+          isFavorite: newFavs.includes(m.id),
+        }));
+      }
+      renderTable();
+    })
+    .withFailureHandler(err => showToast('Could not update favorites: ' + err.message, true))
+    .toggleFavorite(userId);
+}
+
+function setView(v) {
+  state.view = v;
+  document.getElementById('btnAll').classList.toggle('active',  v === 'all');
+  document.getElementById('btnFavs').classList.toggle('active', v === 'favs');
+  if (state.weekData) renderTable();
+}
+
+// ── Detail Panel ───────────────────────────────────────────────
+function openPanel(userId, preserveScroll) {
+  state.selectedUserId = userId;
+  const member = state.weekData?.members.find(m => m.id === userId);
+
+  // Update header
+  const avatarEl = document.getElementById('panelAvatar');
+  if (member?.avatar) {
+    avatarEl.innerHTML = `<img src="${member.avatar}" alt="">`;
+  } else {
+    avatarEl.textContent = member?.initials || '?';
+  }
+  document.getElementById('panelName').textContent = member?.name || userId;
+  document.getElementById('panelWeek').textContent = formatWeekLabel(state.weekStartMs);
+
+  // Open panel
+  document.getElementById('panel').classList.add('open');
+
+  // Highlight row
+  document.querySelectorAll('#tableBody tr').forEach(tr => {
+    tr.classList.toggle('selected', tr.dataset.uid === userId);
+  });
+
+  // Load entries
+  const body = document.getElementById('panelBody');
+  body.innerHTML = '<div class="panel-loading"><div class="spinner"></div><span style="font-size:12px;color:var(--muted);font-family:\'DM Mono\',monospace">Loading entries…</span></div>';
+
+  google.script.run
+    .withSuccessHandler(entries => {
+      state.panelEntries = entries;
+      renderPanel(entries, member);
+    })
+    .withFailureHandler(err => {
+      body.innerHTML = `<div class="panel-loading" style="color:var(--red)">${esc(err.message)}</div>`;
+    })
+    .getDeveloperWeek(userId, state.weekStartMs);
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+  state.selectedUserId = null;
+  document.querySelectorAll('#tableBody tr').forEach(tr => tr.classList.remove('selected'));
+}
+
+function renderPanel(entries, member) {
+  const body = document.getElementById('panelBody');
+
+  if (!entries || entries.length === 0) {
+    body.innerHTML = '<div class="panel-loading" style="flex-direction:column;gap:8px"><span style="font-size:24px;opacity:.3">📭</span><span style="font-size:13px">No entries this week</span></div>';
+    return;
+  }
+
+  // Group by day
+  const groups = {};
+  DAY_KEYS.forEach(k => groups[k] = []);
+
+  entries.forEach(e => {
+    const key = msToDayKey(e.start);
+    if (groups[key]) groups[key].push(e);
+  });
+
+  let html = '';
+  DAY_KEYS.forEach((key, idx) => {
+    const dayEntries = groups[key];
+    if (dayEntries.length === 0) return;
+
+    const date  = new Date(state.weekStartMs + idx * 24 * 60 * 60 * 1000);
+    const label = DAY_NAMES[idx] + ', ' + date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    const total = dayEntries.reduce((s, e) => s + e.durationMs, 0);
+    const hrs   = total / 3600000;
+
+    const isWeekend = (idx === 5 || idx === 6);
+    const totalChip = `<span class="day-total ${dayTotalClass(hrs, isWeekend)}">${hrs.toFixed(1)}h</span>`;
+
+    html += `<div class="day-group">
+      <div class="day-group-header">
+        <span class="day-label">${label}</span>
+        ${totalChip}
+      </div>`;
+
+    dayEntries.forEach(e => {
+      html += renderEntryRow(e);
+    });
+
+    html += '</div>';
+  });
+
+  body.innerHTML = html;
+
+  // Attach change listeners
+  body.querySelectorAll('.field-input, .tags-input').forEach(el => {
+    el.addEventListener('input', () => markDirty(el));
+  });
+  body.querySelectorAll('.billable-chk').forEach(el => {
+    el.addEventListener('change', () => markDirtyById(el.dataset.eid));
+  });
+}
+
+function renderEntryRow(e) {
+  const hrs = (e.durationMs / 3600000).toFixed(2) + 'h';
+  const tagsVal = (e.tags || []).join(', ');
+
+  return `<div class="entry-row" id="row-${e.id}">
+    <div>
+      <div class="entry-meta">
+        ${e.taskId ? `<span class="task-id">#${esc(e.taskId)}</span>` : ''}
+        <span class="task-name">${esc(e.taskName)}</span>
+      </div>
+      <div class="entry-fields">
+        <div class="field-row">
+          <span class="field-label">Desc</span>
+          <textarea class="field-input" rows="1"
+            data-eid="${e.id}" data-field="description"
+            data-orig="${esc(e.description)}">${esc(e.description)}</textarea>
+        </div>
+        <div class="field-row">
+          <span class="field-label">Tags</span>
+          <input type="text" class="tags-input"
+            data-eid="${e.id}" data-field="tags"
+            data-orig="${esc(tagsVal)}"
+            value="${esc(tagsVal)}"
+            placeholder="tag1, tag2">
+        </div>
+        <div class="field-row">
+          <span class="field-label">Bill.</span>
+          <label class="toggle">
+            <input type="checkbox" class="billable-chk"
+              data-eid="${e.id}" ${e.billable ? 'checked' : ''} data-orig="${e.billable}">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+          <span class="billable-label">${e.billable ? 'Billable' : 'Non-billable'}</span>
+        </div>
+      </div>
+      <div class="entry-actions">
+        <button class="btn-save" id="save-${e.id}" onclick="saveEntry('${e.id}')">Save</button>
+        <span class="save-status" id="status-${e.id}"></span>
+      </div>
+    </div>
+    <div class="entry-duration">${hrs}</div>
+  </div>`;
+}
+
+function dayTotalClass(hrs, isWeekend) {
+  if (isWeekend || hrs === 0) return 'cell-empty';
+  if (hrs >= 7 && hrs <= 9)      return 'cell-green';
+  if (hrs >= 4 && hrs < 7)       return 'cell-yellow';
+  if (hrs > 9 && hrs <= 10)      return 'cell-yellow';
+  return 'cell-red';
+}
+
+function markDirty(el) {
+  const eid = el.dataset.eid;
+  markDirtyById(eid);
+}
+
+function markDirtyById(eid) {
+  // Check if anything changed
+  const row   = document.getElementById('row-' + eid);
+  if (!row) return;
+  const desc  = row.querySelector('[data-field="description"]');
+  const tags  = row.querySelector('[data-field="tags"]');
+  const bill  = row.querySelector('.billable-chk');
+
+  const descDirty = desc && desc.value !== desc.dataset.orig;
+  const tagsDirty = tags && tags.value !== tags.dataset.orig;
+  const billDirty = bill && String(bill.checked) !== bill.dataset.orig;
+
+  const dirty = descDirty || tagsDirty || billDirty;
+
+  if (desc) desc.classList.toggle('dirty', descDirty);
+  if (tags) tags.classList.toggle('dirty', tagsDirty);
+
+  const saveBtn = document.getElementById('save-' + eid);
+  if (saveBtn) saveBtn.classList.toggle('enabled', dirty);
+
+  // Clear status when editing again
+  const status = document.getElementById('status-' + eid);
+  if (status) { status.className = 'save-status'; status.textContent = ''; }
+}
+
+// ── Save entry ─────────────────────────────────────────────────
+function saveEntry(eid) {
+  const row  = document.getElementById('row-' + eid);
+  const desc = row.querySelector('[data-field="description"]')?.value;
+  const tagsRaw = row.querySelector('[data-field="tags"]')?.value || '';
+  const bill = row.querySelector('.billable-chk')?.checked;
+
+  const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
+
+  const saveBtn = document.getElementById('save-' + eid);
+  const status  = document.getElementById('status-' + eid);
+
+  saveBtn.classList.add('saving');
+  saveBtn.textContent = '…';
+
+  google.script.run
+    .withSuccessHandler(() => {
+      saveBtn.classList.remove('saving', 'enabled');
+      saveBtn.textContent = 'Save';
+
+      // Update orig values
+      const descEl = row.querySelector('[data-field="description"]');
+      const tagsEl = row.querySelector('[data-field="tags"]');
+      const billEl = row.querySelector('.billable-chk');
+      const billLabel = row.querySelector('.billable-label');
+      if (descEl) { descEl.dataset.orig = descEl.value; descEl.classList.remove('dirty'); }
+      if (tagsEl) { tagsEl.dataset.orig = tagsEl.value; tagsEl.classList.remove('dirty'); }
+      if (billEl) { billEl.dataset.orig = String(billEl.checked); }
+      if (billLabel) billLabel.textContent = bill ? 'Billable' : 'Non-billable';
+
+      if (status) { status.className = 'save-status ok'; status.textContent = '✓ Saved'; }
+      setTimeout(() => { if (status) { status.className = 'save-status'; status.textContent = ''; } }, 3000);
+    })
+    .withFailureHandler(err => {
+      saveBtn.classList.remove('saving');
+      saveBtn.classList.add('enabled');
+      saveBtn.textContent = 'Save';
+      if (status) { status.className = 'save-status err'; status.textContent = '✗ ' + err.message; }
+    })
+    .saveEntryChanges({ entryId: eid, description: desc, billable: bill, tags });
+}
+
+// ── Utilities ──────────────────────────────────────────────────
+function msToDayKey(ms) {
+  const d = new Date(ms);
+  return ['sun','mon','tue','wed','thu','fri','sat'][d.getDay()];
+}
+
+function esc(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function showLoading(msg) {
+  document.getElementById('loadingText').textContent = msg || 'Loading…';
+  document.getElementById('loading').classList.remove('hidden');
+}
+function hideLoading() {
+  document.getElementById('loading').classList.add('hidden');
+}
+
+let _toastTimer;
+function showToast(msg, isErr) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (isErr ? ' err' : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.className = ''; }, 4000);
+}
+</script>
+</body>
+</html>
