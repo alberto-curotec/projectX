@@ -20,7 +20,7 @@ Built as a companion tool to [clickup-time-entries-sheet](https://github.com/you
 - Click any developer row to open a slide-in panel showing their full week of entries
 - Entries grouped by day with daily totals
 - Columns per entry: Custom Task ID | Task Name | Description | Time | Labels | Billable
-- Custom task IDs displayed (e.g. `CTK-1234`) instead of internal ClickUp IDs
+- Custom task IDs displayed (e.g. `CTK-1234`) — clickable, opens the task in ClickUp in a new tab
 - Inline editing: Description (textarea), Tags (comma-separated), Billable (toggle)
 - Save button per row, active only when something changed
 - Syncs directly to ClickUp on Save

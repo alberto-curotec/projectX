@@ -457,7 +457,10 @@
     background: var(--accent-dim);
     padding: 2px 6px; border-radius: 4px;
     white-space: nowrap;
+    text-decoration: none; cursor: pointer;
+    transition: background .15s, color .15s;
   }
+  .task-id:hover { background: var(--accent); color: #fff; }
   .task-name { font-size: 13px; font-weight: 500; }
 
   .entry-duration {
@@ -1029,11 +1032,12 @@ function renderEntryRow(e) {
   const hrs = (e.durationMs / 3600000).toFixed(2) + 'h';
   const tagsVal = (e.tags || []).join(', ');
   const displayId = e.customId || e.taskId;
+  const taskUrl = displayId ? `https://app.clickup.com/t/${encodeURIComponent(displayId)}` : '';
   const canSplit = e.durationMs >= 1800000; // >= 30 min
   return `<div class="entry-row" id="row-${e.id}">
     <div>
       <div class="entry-meta">
-        ${displayId ? `<span class="task-id">${esc(displayId)}</span>` : ''}
+        ${displayId ? `<span class="task-id" onclick="window.open('${taskUrl}','_blank')" title="Open in ClickUp">${esc(displayId)}</span>` : ''}
         <span class="task-name">${esc(e.taskName)}</span>
       </div>
       <div class="entry-fields">

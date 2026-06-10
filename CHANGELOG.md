@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] — 2026-06-10
+
+### Changed
+- **Clickable task IDs**: Task ID badges in the detail panel are now links that open the ClickUp task in a new tab, with a hover effect for discoverability
+
+---
+
 ## [1.4.1] — 2026-06-01
 
 ### Fixed
