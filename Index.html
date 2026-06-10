@@ -6,52 +6,43 @@
 <title>ClickUp — Time by Developer</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* ── Reset & Base ─────────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:          #0f1117;
-    --surface:     #171b26;
-    --surface2:    #1e2333;
-    --border:      #2a2f42;
-    --border2:     #343a50;
-    --text:        #e8eaf0;
-    --muted:       #6b7394;
-    --accent:      #4f8ef7;
-    --accent-dim:  #1e3160;
-
-    --green:       #22c55e;
-    --green-bg:    #0d2a1a;
-    --yellow:      #eab308;
-    --yellow-bg:   #2a2200;
-    --red:         #ef4444;
-    --red-bg:      #2a0d0d;
-    --gray:        #4b5168;
-    --gray-bg:     #181c27;
-
-    --panel-w:     560px;
-    --header-h:    64px;
-    --radius:      8px;
-    --radius-lg:   12px;
+    --bg:         #0f1117;
+    --surface:    #171b26;
+    --surface2:   #1e2333;
+    --border:     #2a2f42;
+    --border2:    #343a50;
+    --text:       #e8eaf0;
+    --muted:      #6b7394;
+    --accent:     #4f8ef7;
+    --accent-dim: #1e3160;
+    --green:      #22c55e;
+    --green-bg:   #0d2a1a;
+    --yellow:     #eab308;
+    --yellow-bg:  #2a2200;
+    --red:        #ef4444;
+    --red-bg:     #2a0d0d;
+    --gray:       #4b5168;
+    --gray-bg:    #181c27;
+    --radius:     8px;
+    --header-h:   64px;
+    --panel-w:    560px;
   }
 
   html, body { height: 100%; }
-
   body {
     font-family: 'DM Sans', sans-serif;
     background: var(--bg);
     color: var(--text);
     font-size: 14px;
     line-height: 1.5;
-    overflow-x: hidden;
+    overflow: hidden;
   }
 
-  /* ── Layout ───────────────────────────────────────────────── */
-  #app {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-  }
+  /* ── App shell ────────────────────────────────────────────── */
+  #app { display: flex; flex-direction: column; height: 100vh; }
 
   /* ── Header ───────────────────────────────────────────────── */
   header {
@@ -61,9 +52,8 @@
     display: flex;
     align-items: center;
     padding: 0 24px;
-    gap: 20px;
+    gap: 16px;
     flex-shrink: 0;
-    position: relative;
     z-index: 10;
   }
 
@@ -73,43 +63,49 @@
     font-weight: 500;
     color: var(--accent);
     letter-spacing: 0.05em;
-    white-space: nowrap;
   }
 
-  .divider-v {
-    width: 1px;
-    height: 24px;
-    background: var(--border);
-    flex-shrink: 0;
-  }
+  .divider-v { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
 
-  /* Week nav */
-  .week-nav {
-    display: flex;
+  /* Back button — only visible on time screen */
+  #btnBack {
+    display: none;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 12px;
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color .15s, background .15s;
   }
+  #btnBack:hover { color: var(--text); background: var(--border); }
+  #btnBack.visible { display: flex; }
+
+  /* Week nav — only visible on time screen */
+  .week-nav { display: none; align-items: center; gap: 8px; }
+  .week-nav.visible { display: flex; }
 
   .week-nav button {
     background: var(--surface2);
     border: 1px solid var(--border);
     color: var(--text);
-    width: 32px;
-    height: 32px;
+    width: 32px; height: 32px;
     border-radius: var(--radius);
     cursor: pointer;
     font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background .15s, border-color .15s;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
   }
-  .week-nav button:hover { background: var(--border); border-color: var(--border2); }
+  .week-nav button:hover { background: var(--border); }
 
   #weekLabel {
     font-family: 'DM Mono', monospace;
     font-size: 12px;
-    color: var(--text);
     min-width: 180px;
     text-align: center;
     letter-spacing: 0.03em;
@@ -127,16 +123,18 @@
     letter-spacing: 0.04em;
   }
 
-  /* View toggle */
+  /* Header right side */
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+  /* View toggle — only on list screen */
   .view-toggle {
     display: flex;
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
-    margin-left: auto;
   }
-
+  .view-toggle.hidden { display: none; }
   .view-toggle button {
     background: transparent;
     border: none;
@@ -149,12 +147,9 @@
     transition: background .15s, color .15s;
     white-space: nowrap;
   }
-  .view-toggle button.active {
-    background: var(--accent);
-    color: #fff;
-  }
+  .view-toggle button.active { background: var(--accent); color: #fff; }
 
-  /* Refresh */
+  /* Refresh button */
   .btn-refresh {
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -165,40 +160,176 @@
     font-family: 'DM Sans', sans-serif;
     font-weight: 500;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    display: flex; align-items: center; gap: 6px;
     transition: background .15s, color .15s;
     white-space: nowrap;
   }
   .btn-refresh:hover { background: var(--border); color: var(--text); }
-  .btn-refresh.loading { opacity: .5; pointer-events: none; }
+  .btn-refresh.loading { opacity: .4; pointer-events: none; }
 
   /* ── Main ─────────────────────────────────────────────────── */
-  main {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
+  main { flex: 1; overflow: hidden; position: relative; }
+
+  /* ── SCREEN 1: Developer List ─────────────────────────────── */
+  #screenList {
+    position: absolute; inset: 0;
+    overflow-y: auto;
+    padding: 32px;
+    transition: opacity .2s, transform .2s;
+  }
+  #screenList.hidden { opacity: 0; pointer-events: none; transform: translateX(-16px); }
+
+  .screen-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
   }
 
-  /* ── Overview Table Area ──────────────────────────────────── */
+  /* Developer grid */
+  .dev-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+
+  .dev-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, transform .1s;
+    position: relative;
+  }
+  .dev-card:hover { border-color: var(--accent); background: var(--surface2); transform: translateY(-1px); }
+  .dev-card.favorite { border-color: var(--border2); }
+
+  .dev-card .avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .dev-card .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+  .dev-info { flex: 1; min-width: 0; }
+  .dev-info .name {
+    font-weight: 500;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dev-info .email {
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .star-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px;
+    opacity: .65;
+    transition: opacity .15s, transform .15s;
+    flex-shrink: 0;
+  }
+  .star-btn:hover { opacity: 1; transform: scale(1.15); color: #eab308; }
+  .star-btn.active { opacity: 1; color: #eab308; }
+
+  /* Section labels */
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 24px 0 10px;
+  }
+  .section-label:first-of-type { margin-top: 0; }
+
+  /* ── SCREEN 2: Time View ──────────────────────────────────── */
+  #screenTime {
+    position: absolute; inset: 0;
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(16px);
+    transition: opacity .2s, transform .2s;
+    overflow: hidden;
+  }
+  #screenTime.visible { opacity: 1; pointer-events: auto; transform: translateX(0); }
+
+  /* Overview (left) */
   #overview {
     flex: 1;
     overflow: auto;
     padding: 24px;
-    transition: width .3s;
   }
 
-  /* ── Table ────────────────────────────────────────────────── */
-  .table-wrap {
-    min-width: 780px;
+  /* Developer summary bar */
+  .dev-summary {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .dev-summary .avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .dev-summary .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .dev-summary .name { font-size: 16px; font-weight: 600; }
+  .dev-summary .email { font-size: 12px; color: var(--muted); }
+  .dev-summary .week-total { margin-left: auto; text-align: right; }
+  .dev-summary .week-total .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .dev-summary .week-total .value {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
   }
 
-  table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-  }
+  /* Weekly table */
+  .table-wrap { min-width: 600px; }
+
+  table { width: 100%; border-collapse: separate; border-spacing: 0; }
 
   thead th {
     font-family: 'DM Mono', monospace;
@@ -212,20 +343,14 @@
     border-bottom: 1px solid var(--border);
     text-align: center;
     white-space: nowrap;
-    position: sticky;
-    top: 0;
-    z-index: 2;
+    position: sticky; top: 0; z-index: 2;
   }
-  thead th:first-child { text-align: left; min-width: 200px; border-radius: var(--radius) 0 0 0; }
+  thead th:first-child { border-radius: var(--radius) 0 0 0; }
   thead th:last-child  { border-radius: 0 var(--radius) 0 0; }
 
-  tbody tr {
-    cursor: pointer;
-    transition: background .12s;
-  }
+  tbody tr { cursor: pointer; transition: background .12s; }
   tbody tr:hover td { background: var(--surface2) !important; }
   tbody tr.selected td { background: var(--accent-dim) !important; }
-  tbody tr.selected td { border-bottom-color: #2a3a5c !important; }
 
   tbody td {
     padding: 10px 14px;
@@ -234,54 +359,7 @@
     background: var(--surface);
     transition: background .12s;
   }
-  tbody td:first-child { text-align: left; }
 
-  /* Developer name cell */
-  .dev-cell {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--accent-dim);
-    color: var(--accent);
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    overflow: hidden;
-  }
-  .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-
-  .dev-name {
-    font-weight: 500;
-    font-size: 13px;
-    color: var(--text);
-  }
-
-  .star-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1;
-    padding: 2px;
-    margin-left: auto;
-    opacity: .35;
-    transition: opacity .15s, transform .15s;
-    flex-shrink: 0;
-  }
-  .star-btn:hover { opacity: .8; transform: scale(1.2); }
-  .star-btn.active { opacity: 1; }
-
-  /* Hour cells */
   .hour-cell {
     font-family: 'DM Mono', monospace;
     font-size: 12px;
@@ -291,7 +369,6 @@
     display: inline-block;
     min-width: 52px;
   }
-
   .cell-green  { background: var(--green-bg);  color: var(--green);  }
   .cell-yellow { background: var(--yellow-bg); color: var(--yellow); }
   .cell-red    { background: var(--red-bg);    color: var(--red);    }
@@ -308,15 +385,6 @@
     min-width: 58px;
   }
 
-  /* Empty state */
-  .empty-state {
-    text-align: center;
-    padding: 80px 24px;
-    color: var(--muted);
-  }
-  .empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: .5; }
-  .empty-state p { font-size: 14px; }
-
   /* ── Detail Panel ─────────────────────────────────────────── */
   #panel {
     width: 0;
@@ -328,96 +396,43 @@
     transition: width .3s cubic-bezier(.4,0,.2,1);
     flex-shrink: 0;
   }
-  #panel.open {
-    width: var(--panel-w);
-    overflow: visible;
-  }
+  #panel.open { width: var(--panel-w); }
 
-  .panel-inner {
-    width: var(--panel-w);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+  .panel-inner { width: var(--panel-w); height: 100%; display: flex; flex-direction: column; overflow: hidden; }
 
   .panel-header {
     padding: 16px 20px;
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    display: flex; align-items: center; gap: 12px;
     flex-shrink: 0;
-  }
-
-  .panel-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--accent-dim);
-    color: var(--accent);
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-  .panel-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-
-  .panel-title { flex: 1; }
-  .panel-title h3 { font-size: 15px; font-weight: 600; }
-  .panel-title span {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.03em;
   }
 
   .panel-close {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 20px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 4px;
-    transition: color .15s;
+    background: none; border: none;
+    color: var(--muted); font-size: 20px;
+    cursor: pointer; padding: 4px;
+    transition: color .15s; margin-left: auto;
   }
   .panel-close:hover { color: var(--text); }
 
-  /* Panel entries */
-  .panel-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0;
-  }
+  .panel-body { flex: 1; overflow-y: auto; }
 
   /* Day group */
-  .day-group {
-    border-bottom: 1px solid var(--border);
-  }
+  .day-group { border-bottom: 1px solid var(--border); }
   .day-group-header {
     padding: 10px 20px;
     background: var(--surface2);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    position: sticky;
-    top: 0;
-    z-index: 1;
+    display: flex; align-items: center; gap: 10px;
+    position: sticky; top: 0; z-index: 1;
   }
-  .day-group-header .day-label {
+  .day-label {
     font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
+    font-size: 11px; font-weight: 500;
     color: var(--muted);
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
-  .day-group-header .day-total {
+  .day-total {
     font-family: 'DM Mono', monospace;
     font-size: 11px;
     padding: 2px 8px;
@@ -430,154 +445,81 @@
     border-bottom: 1px solid var(--border);
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 8px;
-    align-items: start;
+    gap: 8px; align-items: start;
   }
   .entry-row:last-child { border-bottom: none; }
 
-  .entry-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 6px;
-    flex-wrap: wrap;
-  }
+  .entry-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
 
   .task-id {
     font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--accent);
+    font-size: 10px; color: var(--accent);
     background: var(--accent-dim);
-    padding: 2px 6px;
-    border-radius: 4px;
+    padding: 2px 6px; border-radius: 4px;
     white-space: nowrap;
   }
-
-  .task-name {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-  }
+  .task-name { font-size: 13px; font-weight: 500; }
 
   .entry-duration {
     font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text);
-    white-space: nowrap;
-    padding-top: 2px;
+    font-size: 12px; font-weight: 500;
+    white-space: nowrap; padding-top: 2px;
   }
 
-  /* Editable fields */
-  .entry-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .field-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
+  .entry-fields { display: flex; flex-direction: column; gap: 6px; }
+  .field-row { display: flex; align-items: center; gap: 8px; }
   .field-label {
-    font-size: 10px;
-    font-weight: 500;
+    font-size: 10px; font-weight: 500;
     color: var(--muted);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    min-width: 38px;
-    flex-shrink: 0;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    min-width: 38px; flex-shrink: 0;
   }
 
   .field-input {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 5px;
-    flex: 1;
-    transition: border-color .15s;
-    resize: none;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 12px; padding: 4px 8px;
+    border-radius: 5px; flex: 1;
+    transition: border-color .15s; resize: none;
   }
   .field-input:focus { outline: none; border-color: var(--accent); }
   .field-input.dirty { border-color: var(--yellow); }
 
   .tags-input {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 5px;
-    flex: 1;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: 'DM Mono', monospace;
+    font-size: 11px; padding: 4px 8px;
+    border-radius: 5px; flex: 1;
     transition: border-color .15s;
   }
   .tags-input:focus { outline: none; border-color: var(--accent); }
   .tags-input.dirty { border-color: var(--yellow); }
 
-  /* Billable toggle */
-  .billable-wrap {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .toggle {
-    position: relative;
-    width: 34px;
-    height: 18px;
-    flex-shrink: 0;
-  }
+  .toggle { position: relative; width: 34px; height: 18px; flex-shrink: 0; }
   .toggle input { display: none; }
   .toggle-track {
-    position: absolute;
-    inset: 0;
-    background: var(--border2);
-    border-radius: 9px;
-    cursor: pointer;
-    transition: background .2s;
+    position: absolute; inset: 0;
+    background: var(--border2); border-radius: 9px;
+    cursor: pointer; transition: background .2s;
   }
   .toggle-thumb {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 12px;
-    height: 12px;
-    background: #fff;
-    border-radius: 50%;
-    transition: transform .2s;
-    pointer-events: none;
+    position: absolute; top: 3px; left: 3px;
+    width: 12px; height: 12px;
+    background: #fff; border-radius: 50%;
+    transition: transform .2s; pointer-events: none;
   }
   .toggle input:checked ~ .toggle-track { background: var(--green); }
   .toggle input:checked ~ .toggle-thumb { transform: translateX(16px); }
-
   .billable-label { font-size: 11px; color: var(--muted); }
 
-  /* Save button */
-  .entry-actions {
-    margin-top: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  .entry-actions { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
 
   .btn-save {
-    background: var(--accent);
-    border: none;
-    color: #fff;
-    font-size: 11px;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 600;
-    padding: 5px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    opacity: .4;
-    pointer-events: none;
+    background: var(--accent); border: none; color: #fff;
+    font-size: 11px; font-family: 'DM Sans', sans-serif;
+    font-weight: 600; padding: 5px 12px;
+    border-radius: 5px; cursor: pointer;
+    opacity: .4; pointer-events: none;
     transition: opacity .15s, background .15s;
     letter-spacing: 0.03em;
   }
@@ -585,32 +527,113 @@
   .btn-save.enabled:hover { background: #3a7be0; }
   .btn-save.saving { opacity: .6; pointer-events: none; }
 
-  .save-status {
-    font-size: 11px;
-    font-family: 'DM Mono', monospace;
-    display: none;
-  }
+  .save-status { font-size: 11px; font-family: 'DM Mono', monospace; display: none; }
   .save-status.ok  { color: var(--green); display: inline; }
   .save-status.err { color: var(--red);   display: inline; }
 
+  /* ── Split panel (inline) ──────────────────────────────────── */
+  .split-panel {
+    margin: 0 20px 12px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .split-panel .split-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; font-weight: 500;
+    color: var(--accent); letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .split-panel .split-row { display: flex; align-items: center; gap: 8px; }
+  .split-panel .split-label {
+    font-size: 10px; font-weight: 500;
+    color: var(--muted); letter-spacing: 0.06em;
+    text-transform: uppercase; min-width: 50px; flex-shrink: 0;
+  }
+  .split-panel select,
+  .split-panel input[type="text"],
+  .split-panel textarea {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 12px; padding: 5px 8px;
+    border-radius: 5px; flex: 1;
+    transition: border-color .15s;
+  }
+  .split-panel select { font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; }
+  .split-panel select:focus,
+  .split-panel input:focus,
+  .split-panel textarea:focus { outline: none; border-color: var(--accent); }
+  .split-panel textarea { resize: none; }
+  .split-panel .task-input-wrap {
+    display: flex; align-items: center; gap: 6px; flex: 1;
+  }
+  .split-panel .task-input-wrap input { flex: 1; font-family: 'DM Mono', monospace; font-size: 11px; }
+  .split-panel .btn-lookup {
+    background: var(--accent-dim); border: 1px solid var(--accent);
+    color: var(--accent); font-size: 11px; font-family: 'DM Sans', sans-serif;
+    font-weight: 500; padding: 5px 10px;
+    border-radius: 5px; cursor: pointer; white-space: nowrap;
+    transition: background .15s;
+  }
+  .split-panel .btn-lookup:hover { background: var(--accent); color: #fff; }
+  .split-panel .btn-lookup:disabled { opacity: .4; pointer-events: none; }
+  .split-panel .resolved-task {
+    font-size: 11px; color: var(--green); margin-top: -2px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .split-panel .resolved-task .resolved-name {
+    font-weight: 500; max-width: 320px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .split-panel .resolve-err { font-size: 11px; color: var(--red); margin-top: -2px; }
+  .split-actions { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .btn-split-save {
+    background: var(--green); border: none; color: #fff;
+    font-size: 11px; font-family: 'DM Sans', sans-serif;
+    font-weight: 600; padding: 5px 14px;
+    border-radius: 5px; cursor: pointer;
+    transition: opacity .15s; letter-spacing: 0.03em;
+  }
+  .btn-split-save:disabled { opacity: .4; pointer-events: none; }
+  .btn-split-save:hover:not(:disabled) { opacity: .85; }
+  .btn-split-cancel {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-size: 11px; font-family: 'DM Sans', sans-serif;
+    font-weight: 500; padding: 5px 12px;
+    border-radius: 5px; cursor: pointer;
+    transition: color .15s, border-color .15s;
+  }
+  .btn-split-cancel:hover { color: var(--text); border-color: var(--border2); }
+  .split-status { font-size: 11px; font-family: 'DM Mono', monospace; }
+  .split-status.ok  { color: var(--green); }
+  .split-status.err { color: var(--red); }
+
+  .btn-split {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-size: 10px; font-family: 'DM Sans', sans-serif;
+    font-weight: 500; padding: 4px 10px;
+    border-radius: 5px; cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+    letter-spacing: 0.03em;
+  }
+  .btn-split:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+
   /* ── Loading overlay ──────────────────────────────────────── */
   #loading {
-    position: fixed;
-    inset: 0;
-    background: rgba(15,17,23,.8);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    gap: 16px;
+    position: fixed; inset: 0;
+    background: rgba(15,17,23,.85);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 100; gap: 16px;
     backdrop-filter: blur(4px);
   }
   #loading.hidden { display: none; }
 
   .spinner {
-    width: 36px;
-    height: 36px;
+    width: 36px; height: 36px;
     border: 3px solid var(--border2);
     border-top-color: var(--accent);
     border-radius: 50%;
@@ -620,47 +643,40 @@
 
   .loading-text {
     font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--muted);
+    font-size: 12px; color: var(--muted);
     letter-spacing: 0.04em;
   }
 
+  /* ── Panel loading ────────────────────────────────────────── */
+  .panel-loading {
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px;
+    padding: 60px; color: var(--muted);
+  }
+  .panel-loading .spinner { width: 24px; height: 24px; border-width: 2px; }
+
+  /* ── Empty state ──────────────────────────────────────────── */
+  .empty-state {
+    text-align: center; padding: 60px 24px; color: var(--muted);
+  }
+  .empty-state .icon { font-size: 36px; margin-bottom: 10px; opacity: .4; }
+  .empty-state p { font-size: 13px; }
+
   /* ── Toast ────────────────────────────────────────────────── */
   #toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    color: var(--text);
-    padding: 10px 16px;
-    border-radius: var(--radius);
-    font-size: 13px;
-    z-index: 200;
-    transform: translateY(20px);
-    opacity: 0;
-    transition: transform .25s, opacity .25s;
-    max-width: 320px;
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    color: var(--text); padding: 10px 16px;
+    border-radius: var(--radius); font-size: 13px;
+    z-index: 200; transform: translateY(20px); opacity: 0;
+    transition: transform .25s, opacity .25s; max-width: 320px;
   }
   #toast.show { transform: translateY(0); opacity: 1; }
   #toast.err  { border-color: var(--red); color: var(--red); }
 
-  /* ── Scrollbars ───────────────────────────────────────────── */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-
-  /* ── Panel loading ────────────────────────────────────────── */
-  .panel-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 12px;
-    padding: 60px;
-    color: var(--muted);
-  }
-  .panel-loading .spinner { width: 24px; height: 24px; border-width: 2px; }
 </style>
 </head>
 <body>
@@ -672,77 +688,86 @@
     <span class="logo">CU / TIME</span>
     <div class="divider-v"></div>
 
-    <div class="week-nav">
-      <button id="btnPrev" title="Previous week">&#8249;</button>
+    <button id="btnBack" onclick="goToList()">← Back</button>
+
+    <div class="week-nav" id="weekNav">
+      <button id="btnPrev">&#8249;</button>
       <span id="weekLabel">—</span>
-      <button id="btnNext" title="Next week">&#8250;</button>
+      <button id="btnNext">&#8250;</button>
       <button class="btn-today" id="btnToday">TODAY</button>
     </div>
 
-    <div class="view-toggle">
-      <button id="btnAll"  class="active" onclick="setView('all')">All</button>
-      <button id="btnFavs"             onclick="setView('favs')">⭐ Favorites</button>
+    <div class="header-right">
+      <div class="view-toggle" id="viewToggle">
+        <button id="btnAll"  class="active" onclick="setView('all')">All</button>
+        <button id="btnFavs"             onclick="setView('favs')">⭐ Favorites</button>
+      </div>
+      <button class="btn-refresh" id="btnRefresh" onclick="handleRefresh()">
+        <span>↺</span> Refresh
+      </button>
     </div>
-
-    <button class="btn-refresh" id="btnRefresh" onclick="loadWeek()">
-      <span>↺</span> Refresh
-    </button>
   </header>
 
   <!-- Main -->
   <main>
-    <!-- Overview -->
-    <div id="overview">
-      <div class="table-wrap">
-        <table id="mainTable">
-          <thead id="tableHead"></thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-        <div id="emptyState" class="empty-state hidden">
-          <div class="icon">📭</div>
-          <p id="emptyMsg">No time entries found for this week.</p>
+
+    <!-- Screen 1: Developer list -->
+    <div id="screenList">
+      <div id="listContent"></div>
+    </div>
+
+    <!-- Screen 2: Time view -->
+    <div id="screenTime">
+      <div id="overview">
+        <div id="devSummary"></div>
+        <div class="table-wrap">
+          <table id="mainTable">
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+          <div id="emptyEntries" class="empty-state hidden">
+            <div class="icon">📭</div>
+            <p>No time entries for this week.</p>
+          </div>
+        </div>
+      </div>
+      <div id="panel">
+        <div class="panel-inner">
+          <div class="panel-header">
+            <span id="panelDayLabel" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)"></span>
+            <button class="panel-close" onclick="closePanel()">×</button>
+          </div>
+          <div class="panel-body" id="panelBody"></div>
         </div>
       </div>
     </div>
 
-    <!-- Detail Panel -->
-    <div id="panel">
-      <div class="panel-inner">
-        <div class="panel-header" id="panelHeader">
-          <div class="panel-avatar" id="panelAvatar"></div>
-          <div class="panel-title">
-            <h3 id="panelName">Developer</h3>
-            <span id="panelWeek"></span>
-          </div>
-          <button class="panel-close" onclick="closePanel()">×</button>
-        </div>
-        <div class="panel-body" id="panelBody"></div>
-      </div>
-    </div>
   </main>
 </div>
 
 <!-- Loading -->
 <div id="loading">
   <div class="spinner"></div>
-  <div class="loading-text" id="loadingText">Fetching time entries…</div>
+  <div class="loading-text" id="loadingText">Loading team…</div>
 </div>
 
 <!-- Toast -->
 <div id="toast"></div>
 
 <script>
-// ── State ──────────────────────────────────────────────────────
+// ── Constants ──────────────────────────────────────────────────
 const DAY_KEYS  = ['mon','tue','wed','thu','fri','sat','sun'];
 const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-let state = {
+// ── State ──────────────────────────────────────────────────────
+const state = {
+  screen:        'list',        // 'list' | 'time'
+  view:          'all',         // 'all'  | 'favs'
+  members:       [],
+  selectedUser:  null,          // { id, name, email, avatar, initials, isFavorite }
   weekStartMs:   mondayOfWeek(new Date()).getTime(),
-  view:          'all',         // 'all' | 'favs'
-  weekData:      null,          // { members, byUser, targets, weekStartMs }
-  selectedUserId: null,
-  panelEntries:  [],
-  favorites:     [],
+  weekData:      null,          // { byDay, entries, targets, weekStartMs }
+  selectedDayKey: null,
 };
 
 // ── Boot ───────────────────────────────────────────────────────
@@ -750,172 +775,98 @@ document.getElementById('btnPrev').addEventListener('click', () => shiftWeek(-1)
 document.getElementById('btnNext').addEventListener('click', () => shiftWeek(+1));
 document.getElementById('btnToday').addEventListener('click', () => {
   state.weekStartMs = mondayOfWeek(new Date()).getTime();
-  loadWeek();
+  loadDeveloperWeek();
 });
 
-loadWeek();
+loadMembers();
 
-// ── Week helpers ───────────────────────────────────────────────
-function mondayOfWeek(d) {
-  const day = d.getDay(); // 0=Sun
-  const diff = (day === 0) ? -6 : 1 - day;
-  const mon = new Date(d);
-  mon.setDate(d.getDate() + diff);
-  mon.setHours(0,0,0,0);
-  return mon;
+// ── Screen routing ─────────────────────────────────────────────
+function showListScreen() {
+  state.screen = 'list';
+  document.getElementById('screenList').classList.remove('hidden');
+  document.getElementById('screenTime').classList.remove('visible');
+  document.getElementById('btnBack').classList.remove('visible');
+  document.getElementById('weekNav').classList.remove('visible');
+  document.getElementById('viewToggle').classList.remove('hidden');
+  closePanel();
 }
 
-function shiftWeek(delta) {
-  state.weekStartMs += delta * 7 * 24 * 60 * 60 * 1000;
-  loadWeek();
+function showTimeScreen() {
+  state.screen = 'time';
+  document.getElementById('screenList').classList.add('hidden');
+  document.getElementById('screenTime').classList.add('visible');
+  document.getElementById('btnBack').classList.add('visible');
+  document.getElementById('weekNav').classList.add('visible');
+  document.getElementById('viewToggle').classList.add('hidden');
 }
 
-function formatWeekLabel(startMs) {
-  const s = new Date(startMs);
-  const e = new Date(startMs + 6 * 24 * 60 * 60 * 1000);
-  const fmt = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-  return fmt(s) + ' – ' + fmt(e) + ', ' + e.getFullYear();
+function goToList() {
+  showListScreen();
 }
 
-function formatDayHeader(startMs, idx) {
-  const d = new Date(startMs + idx * 24 * 60 * 60 * 1000);
-  return DAY_NAMES[idx] + ' ' + d.getDate();
-}
-
-// ── Load week ──────────────────────────────────────────────────
-function loadWeek() {
-  showLoading('Fetching time entries…');
-  document.getElementById('weekLabel').textContent = formatWeekLabel(state.weekStartMs);
-  document.getElementById('btnRefresh').classList.add('loading');
-
+// ── Screen 1: Load & render members ───────────────────────────
+function loadMembers() {
+  showLoading('Loading team…');
   google.script.run
-    .withSuccessHandler(data => {
-      state.weekData  = data;
-      state.favorites = data.members.filter(m => m.isFavorite).map(m => m.id);
+    .withSuccessHandler(members => {
+      state.members = members;
       hideLoading();
-      document.getElementById('btnRefresh').classList.remove('loading');
-      renderTable();
-      if (state.selectedUserId) {
-        openPanel(state.selectedUserId, true);
-      }
+      renderList();
     })
     .withFailureHandler(err => {
       hideLoading();
-      document.getElementById('btnRefresh').classList.remove('loading');
       showToast('Error: ' + err.message, true);
     })
-    .getWeekData(state.weekStartMs);
+    .getMembers();
 }
 
-// ── Render table ───────────────────────────────────────────────
-function renderTable() {
-  const { members, byUser, targets, weekStartMs } = state.weekData;
+function renderList() {
+  const favs = state.members.filter(m => m.isFavorite);
+  const rest = state.members.filter(m => !m.isFavorite);
 
-  // Head
-  const head = document.getElementById('tableHead');
-  let headHtml = '<tr><th>Developer</th>';
-  DAY_KEYS.forEach((_, i) => {
-    headHtml += `<th>${formatDayHeader(weekStartMs, i)}</th>`;
-  });
-  headHtml += '<th>Total</th></tr>';
-  head.innerHTML = headHtml;
-
-  // Filter members
-  let visible = members;
-  if (state.view === 'favs') {
-    visible = members.filter(m => m.isFavorite);
-  } else {
-    // All view: show members who have time OR are favorites
-    visible = members.filter(m => m.isFavorite || (byUser[m.id] && byUser[m.id].total > 0));
-  }
-
-  const body = document.getElementById('tableBody');
-  const empty = document.getElementById('emptyState');
-
-  if (visible.length === 0) {
-    body.innerHTML = '';
-    empty.classList.remove('hidden');
-    document.getElementById('emptyMsg').textContent =
-      state.view === 'favs'
-        ? 'No favorites set. Star developers in the All view.'
-        : 'No time entries found for this week.';
-    return;
-  }
-
-  empty.classList.add('hidden');
-
-  // Sort: favorites first, then alphabetical
-  visible.sort((a, b) => {
-    if (a.isFavorite && !b.isFavorite) return -1;
-    if (!a.isFavorite && b.isFavorite) return 1;
-    return a.name.localeCompare(b.name);
-  });
+  // Apply view filter
+  const showFavs = state.view === 'favs';
+  const visible  = showFavs ? favs : null; // null = show all sections
 
   let html = '';
-  visible.forEach(m => {
-    const u = byUser[m.id] || { mon:0,tue:0,wed:0,thu:0,fri:0,sat:0,sun:0,total:0,entries:[] };
-    const isSelected = m.id === state.selectedUserId;
-    html += `<tr data-uid="${m.id}" class="${isSelected ? 'selected' : ''}" onclick="openPanel('${m.id}')">`;
 
-    // Developer cell
-    const avatarHtml = m.avatar
-      ? `<img src="${m.avatar}" alt="">`
-      : m.initials;
-    html += `<td>
-      <div class="dev-cell">
-        <div class="avatar">${avatarHtml}</div>
-        <span class="dev-name">${esc(m.name)}</span>
-        <button class="star-btn ${m.isFavorite ? 'active' : ''}"
-          onclick="toggleFav(event,'${m.id}')"
-          title="${m.isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
-          ${m.isFavorite ? '⭐' : '☆'}
-        </button>
-      </div>
-    </td>`;
-
-    // Day cells
-    const startMs = state.weekData.weekStartMs;
-    DAY_KEYS.forEach((key, idx) => {
-      const ms   = u[key] || 0;
-      const hrs  = ms / 3600000;
-      const date = new Date(startMs + idx * 24 * 60 * 60 * 1000);
-      const isWeekend = (idx === 5 || idx === 6);
-      html += `<td>${hourCell(hrs, isWeekend)}</td>`;
-    });
-
-    // Total cell
-    const totalHrs = u.total / 3600000;
-    html += `<td>${totalCell(totalHrs, targets.week)}</td>`;
-    html += '</tr>';
-  });
-
-  body.innerHTML = html;
-}
-
-function hourCell(hrs, isWeekend) {
-  if (hrs === 0) {
-    if (isWeekend) return `<span class="hour-cell cell-empty">—</span>`;
-    return `<span class="hour-cell cell-gray">0h</span>`;
+  if (showFavs) {
+    if (favs.length === 0) {
+      html = '<div class="empty-state"><div class="icon">⭐</div><p>No favorites yet. Switch to All and star some developers.</p></div>';
+    } else {
+      html += '<div class="dev-grid">' + favs.map(m => devCard(m)).join('') + '</div>';
+    }
+  } else {
+    if (favs.length > 0) {
+      html += '<div class="section-label">⭐ Favorites</div>';
+      html += '<div class="dev-grid">' + favs.map(m => devCard(m)).join('') + '</div>';
+    }
+    if (rest.length > 0) {
+      if (favs.length > 0) html += '<div class="section-label" style="margin-top:28px">Team</div>';
+      html += '<div class="dev-grid">' + rest.map(m => devCard(m)).join('') + '</div>';
+    }
+    if (state.members.length === 0) {
+      html = '<div class="empty-state"><div class="icon">👥</div><p>No team members found.</p></div>';
+    }
   }
-  const label = hrs.toFixed(1) + 'h';
-  if (isWeekend) return `<span class="hour-cell cell-empty">${label}</span>`;
-  let cls;
-  if (hrs >= 7 && hrs <= 9)       cls = 'cell-green';
-  else if (hrs >= 4 && hrs < 7)   cls = 'cell-yellow';
-  else if (hrs > 9 && hrs <= 10)  cls = 'cell-yellow';
-  else                            cls = 'cell-red';
-  return `<span class="hour-cell ${cls}">${label}</span>`;
+
+  document.getElementById('listContent').innerHTML = html;
 }
 
-function totalCell(hrs, target) {
-  const label = hrs.toFixed(1) + 'h';
-  if (hrs === 0) return `<span class="total-cell cell-gray">${label}</span>`;
-  let cls;
-  if (hrs >= target * 0.9 && hrs <= target * 1.1)  cls = 'cell-green';
-  else if (hrs >= target * 0.6 && hrs < target * 0.9) cls = 'cell-yellow';
-  else if (hrs > target * 1.1 && hrs <= target * 1.25) cls = 'cell-yellow';
-  else cls = 'cell-red';
-  return `<span class="total-cell ${cls}">${label}</span>`;
+function devCard(m) {
+  const avatarHtml = m.avatar ? `<img src="${m.avatar}" alt="">` : esc(m.initials);
+  return `<div class="dev-card ${m.isFavorite ? 'favorite' : ''}" onclick="selectDeveloper('${m.id}')">
+    <div class="avatar">${avatarHtml}</div>
+    <div class="dev-info">
+      <div class="name">${esc(m.name)}</div>
+      <div class="email">${esc(m.email)}</div>
+    </div>
+    <button class="star-btn ${m.isFavorite ? 'active' : ''}"
+      onclick="toggleFav(event,'${m.id}')"
+      title="${m.isFavorite ? 'Remove from favorites' : 'Add to favorites'}">
+      ${m.isFavorite ? '⭐' : '☆'}
+    </button>
+  </div>`;
 }
 
 // ── Favorites ──────────────────────────────────────────────────
@@ -923,15 +874,8 @@ function toggleFav(event, userId) {
   event.stopPropagation();
   google.script.run
     .withSuccessHandler(newFavs => {
-      state.favorites = newFavs;
-      // Update member isFavorite in weekData
-      if (state.weekData) {
-        state.weekData.members = state.weekData.members.map(m => ({
-          ...m,
-          isFavorite: newFavs.includes(m.id),
-        }));
-      }
-      renderTable();
+      state.members = state.members.map(m => ({ ...m, isFavorite: newFavs.includes(m.id) }));
+      renderList();
     })
     .withFailureHandler(err => showToast('Could not update favorites: ' + err.message, true))
     .toggleFavorite(userId);
@@ -941,99 +885,132 @@ function setView(v) {
   state.view = v;
   document.getElementById('btnAll').classList.toggle('active',  v === 'all');
   document.getElementById('btnFavs').classList.toggle('active', v === 'favs');
-  if (state.weekData) renderTable();
+  renderList();
 }
 
-// ── Detail Panel ───────────────────────────────────────────────
-function openPanel(userId, preserveScroll) {
-  state.selectedUserId = userId;
-  const member = state.weekData?.members.find(m => m.id === userId);
+// ── Screen 2: Select developer & load week ────────────────────
+function selectDeveloper(userId) {
+  const member = state.members.find(m => m.id === userId);
+  if (!member) return;
+  state.selectedUser = member;
+  state.weekStartMs  = mondayOfWeek(new Date()).getTime();
+  showTimeScreen();
+  loadDeveloperWeek();
+}
 
-  // Update header
-  const avatarEl = document.getElementById('panelAvatar');
-  if (member?.avatar) {
-    avatarEl.innerHTML = `<img src="${member.avatar}" alt="">`;
-  } else {
-    avatarEl.textContent = member?.initials || '?';
-  }
-  document.getElementById('panelName').textContent = member?.name || userId;
-  document.getElementById('panelWeek').textContent = formatWeekLabel(state.weekStartMs);
-
-  // Open panel
-  document.getElementById('panel').classList.add('open');
-
-  // Highlight row
-  document.querySelectorAll('#tableBody tr').forEach(tr => {
-    tr.classList.toggle('selected', tr.dataset.uid === userId);
-  });
-
-  // Load entries
-  const body = document.getElementById('panelBody');
-  body.innerHTML = '<div class="panel-loading"><div class="spinner"></div><span style="font-size:12px;color:var(--muted);font-family:\'DM Mono\',monospace">Loading entries…</span></div>';
+function loadDeveloperWeek() {
+  if (!state.selectedUser) return;
+  showLoading('Fetching time entries…');
+  updateWeekLabel();
+  document.getElementById('btnRefresh').classList.add('loading');
 
   google.script.run
-    .withSuccessHandler(entries => {
-      state.panelEntries = entries;
-      renderPanel(entries, member);
+    .withSuccessHandler(data => {
+      state.weekData = data;
+      hideLoading();
+      document.getElementById('btnRefresh').classList.remove('loading');
+      renderTimeScreen();
     })
     .withFailureHandler(err => {
-      body.innerHTML = `<div class="panel-loading" style="color:var(--red)">${esc(err.message)}</div>`;
+      hideLoading();
+      document.getElementById('btnRefresh').classList.remove('loading');
+      showToast('Error: ' + err.message, true);
     })
-    .getDeveloperWeek(userId, state.weekStartMs);
+    .getDeveloperWeekData(state.selectedUser.id, state.weekStartMs);
 }
 
-function closePanel() {
-  document.getElementById('panel').classList.remove('open');
-  state.selectedUserId = null;
-  document.querySelectorAll('#tableBody tr').forEach(tr => tr.classList.remove('selected'));
+function shiftWeek(delta) {
+  state.weekStartMs += delta * 7 * 24 * 60 * 60 * 1000;
+  closePanel();
+  loadDeveloperWeek();
 }
 
-function renderPanel(entries, member) {
+function handleRefresh() {
+  if (state.screen === 'list') loadMembers();
+  else loadDeveloperWeek();
+}
+
+// ── Render time screen ─────────────────────────────────────────
+function renderTimeScreen() {
+  const m    = state.selectedUser;
+  const data = state.weekData;
+
+  // Summary bar
+  const avatarHtml = m.avatar ? `<img src="${m.avatar}" alt="">` : esc(m.initials);
+  const totalHrs   = data.byDay.total / 3600000;
+  document.getElementById('devSummary').innerHTML = `
+    <div class="dev-summary">
+      <div class="avatar">${avatarHtml}</div>
+      <div>
+        <div class="name">${esc(m.name)}</div>
+        <div class="email">${esc(m.email)}</div>
+      </div>
+      <div class="week-total">
+        <div class="label">Week Total</div>
+        <div class="value ${totalColorClass(totalHrs, data.targets.week)}">${totalHrs.toFixed(1)}h</div>
+      </div>
+    </div>`;
+
+  // Table head
+  const head = document.getElementById('tableHead');
+  let headHtml = '<tr>';
+  DAY_KEYS.forEach((_, i) => {
+    headHtml += `<th>${formatDayHeader(state.weekStartMs, i)}</th>`;
+  });
+  headHtml += '<th>Total</th></tr>';
+  head.innerHTML = headHtml;
+
+  // Table body — single row for this developer
+  const body   = document.getElementById('tableBody');
+  const byDay  = data.byDay;
+  const empty  = document.getElementById('emptyEntries');
+
+  if (data.entries.length === 0) {
+    body.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  let row = '<tr>';
+  DAY_KEYS.forEach((key, idx) => {
+    const ms      = byDay[key] || 0;
+    const hrs     = ms / 3600000;
+    const isWeekend = (idx === 5 || idx === 6);
+    const selected  = state.selectedDayKey === key;
+    row += `<td class="${selected ? 'selected' : ''}" onclick="openDayPanel('${key}', ${idx})" style="cursor:pointer">
+      ${hourCell(hrs, isWeekend)}
+    </td>`;
+  });
+
+  const totalH = byDay.total / 3600000;
+  row += `<td>${totalCell(totalH, data.targets.week)}</td></tr>`;
+  body.innerHTML = row;
+}
+
+// ── Panel: Day detail ──────────────────────────────────────────
+function openDayPanel(dayKey, dayIdx) {
+  state.selectedDayKey = dayKey;
+  renderTimeScreen(); // re-render to highlight selected cell
+
+  const entries = state.weekData.entries.filter(e => msToDayKey(e.start) === dayKey);
+  const date    = new Date(state.weekStartMs + dayIdx * 24 * 60 * 60 * 1000);
+  const label   = DAY_NAMES[dayIdx] + ', ' + date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+
+  document.getElementById('panelDayLabel').textContent = label;
+  document.getElementById('panel').classList.add('open');
+
   const body = document.getElementById('panelBody');
 
-  if (!entries || entries.length === 0) {
-    body.innerHTML = '<div class="panel-loading" style="flex-direction:column;gap:8px"><span style="font-size:24px;opacity:.3">📭</span><span style="font-size:13px">No entries this week</span></div>';
+  if (entries.length === 0) {
+    body.innerHTML = '<div class="panel-loading"><span style="font-size:24px;opacity:.3">📭</span><span style="font-size:13px;color:var(--muted)">No entries this day</span></div>';
     return;
   }
 
-  // Group by day
-  const groups = {};
-  DAY_KEYS.forEach(k => groups[k] = []);
-
-  entries.forEach(e => {
-    const key = msToDayKey(e.start);
-    if (groups[key]) groups[key].push(e);
-  });
-
   let html = '';
-  DAY_KEYS.forEach((key, idx) => {
-    const dayEntries = groups[key];
-    if (dayEntries.length === 0) return;
-
-    const date  = new Date(state.weekStartMs + idx * 24 * 60 * 60 * 1000);
-    const label = DAY_NAMES[idx] + ', ' + date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
-    const total = dayEntries.reduce((s, e) => s + e.durationMs, 0);
-    const hrs   = total / 3600000;
-
-    const isWeekend = (idx === 5 || idx === 6);
-    const totalChip = `<span class="day-total ${dayTotalClass(hrs, isWeekend)}">${hrs.toFixed(1)}h</span>`;
-
-    html += `<div class="day-group">
-      <div class="day-group-header">
-        <span class="day-label">${label}</span>
-        ${totalChip}
-      </div>`;
-
-    dayEntries.forEach(e => {
-      html += renderEntryRow(e);
-    });
-
-    html += '</div>';
-  });
-
+  entries.forEach(e => { html += renderEntryRow(e); });
   body.innerHTML = html;
 
-  // Attach change listeners
   body.querySelectorAll('.field-input, .tags-input').forEach(el => {
     el.addEventListener('input', () => markDirty(el));
   });
@@ -1042,14 +1019,21 @@ function renderPanel(entries, member) {
   });
 }
 
+function closePanel() {
+  state.selectedDayKey = null;
+  document.getElementById('panel').classList.remove('open');
+  if (state.weekData) renderTimeScreen();
+}
+
 function renderEntryRow(e) {
   const hrs = (e.durationMs / 3600000).toFixed(2) + 'h';
   const tagsVal = (e.tags || []).join(', ');
-
+  const displayId = e.customId || e.taskId;
+  const canSplit = e.durationMs >= 1800000; // >= 30 min
   return `<div class="entry-row" id="row-${e.id}">
     <div>
       <div class="entry-meta">
-        ${e.taskId ? `<span class="task-id">#${esc(e.taskId)}</span>` : ''}
+        ${displayId ? `<span class="task-id">${esc(displayId)}</span>` : ''}
         <span class="task-name">${esc(e.taskName)}</span>
       </div>
       <div class="entry-fields">
@@ -1064,8 +1048,7 @@ function renderEntryRow(e) {
           <input type="text" class="tags-input"
             data-eid="${e.id}" data-field="tags"
             data-orig="${esc(tagsVal)}"
-            value="${esc(tagsVal)}"
-            placeholder="tag1, tag2">
+            value="${esc(tagsVal)}" placeholder="tag1, tag2">
         </div>
         <div class="field-row">
           <span class="field-label">Bill.</span>
@@ -1080,38 +1063,28 @@ function renderEntryRow(e) {
       </div>
       <div class="entry-actions">
         <button class="btn-save" id="save-${e.id}" onclick="saveEntry('${e.id}')">Save</button>
+        ${canSplit ? `<button class="btn-split" onclick="toggleSplit('${e.id}', ${e.durationMs}, '${esc(e.description)}', '${esc(tagsVal)}', ${e.billable})">✂ Split</button>` : ''}
         <span class="save-status" id="status-${e.id}"></span>
       </div>
     </div>
     <div class="entry-duration">${hrs}</div>
-  </div>`;
+  </div>
+  <div id="split-${e.id}"></div>`;
 }
 
-function dayTotalClass(hrs, isWeekend) {
-  if (isWeekend || hrs === 0) return 'cell-empty';
-  if (hrs >= 7 && hrs <= 9)      return 'cell-green';
-  if (hrs >= 4 && hrs < 7)       return 'cell-yellow';
-  if (hrs > 9 && hrs <= 10)      return 'cell-yellow';
-  return 'cell-red';
-}
-
-function markDirty(el) {
-  const eid = el.dataset.eid;
-  markDirtyById(eid);
-}
+// ── Save entry ─────────────────────────────────────────────────
+function markDirty(el) { markDirtyById(el.dataset.eid); }
 
 function markDirtyById(eid) {
-  // Check if anything changed
-  const row   = document.getElementById('row-' + eid);
+  const row  = document.getElementById('row-' + eid);
   if (!row) return;
-  const desc  = row.querySelector('[data-field="description"]');
-  const tags  = row.querySelector('[data-field="tags"]');
-  const bill  = row.querySelector('.billable-chk');
+  const desc = row.querySelector('[data-field="description"]');
+  const tags = row.querySelector('[data-field="tags"]');
+  const bill = row.querySelector('.billable-chk');
 
   const descDirty = desc && desc.value !== desc.dataset.orig;
   const tagsDirty = tags && tags.value !== tags.dataset.orig;
   const billDirty = bill && String(bill.checked) !== bill.dataset.orig;
-
   const dirty = descDirty || tagsDirty || billDirty;
 
   if (desc) desc.classList.toggle('dirty', descDirty);
@@ -1120,19 +1093,16 @@ function markDirtyById(eid) {
   const saveBtn = document.getElementById('save-' + eid);
   if (saveBtn) saveBtn.classList.toggle('enabled', dirty);
 
-  // Clear status when editing again
   const status = document.getElementById('status-' + eid);
   if (status) { status.className = 'save-status'; status.textContent = ''; }
 }
 
-// ── Save entry ─────────────────────────────────────────────────
 function saveEntry(eid) {
-  const row  = document.getElementById('row-' + eid);
-  const desc = row.querySelector('[data-field="description"]')?.value;
+  const row     = document.getElementById('row-' + eid);
+  const desc    = row.querySelector('[data-field="description"]')?.value;
   const tagsRaw = row.querySelector('[data-field="tags"]')?.value || '';
-  const bill = row.querySelector('.billable-chk')?.checked;
-
-  const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
+  const bill    = row.querySelector('.billable-chk')?.checked;
+  const tags    = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
 
   const saveBtn = document.getElementById('save-' + eid);
   const status  = document.getElementById('status-' + eid);
@@ -1145,15 +1115,15 @@ function saveEntry(eid) {
       saveBtn.classList.remove('saving', 'enabled');
       saveBtn.textContent = 'Save';
 
-      // Update orig values
-      const descEl = row.querySelector('[data-field="description"]');
-      const tagsEl = row.querySelector('[data-field="tags"]');
-      const billEl = row.querySelector('.billable-chk');
-      const billLabel = row.querySelector('.billable-label');
+      const descEl  = row.querySelector('[data-field="description"]');
+      const tagsEl  = row.querySelector('[data-field="tags"]');
+      const billEl  = row.querySelector('.billable-chk');
+      const billLbl = row.querySelector('.billable-label');
+
       if (descEl) { descEl.dataset.orig = descEl.value; descEl.classList.remove('dirty'); }
       if (tagsEl) { tagsEl.dataset.orig = tagsEl.value; tagsEl.classList.remove('dirty'); }
       if (billEl) { billEl.dataset.orig = String(billEl.checked); }
-      if (billLabel) billLabel.textContent = bill ? 'Billable' : 'Non-billable';
+      if (billLbl) billLbl.textContent = bill ? 'Billable' : 'Non-billable';
 
       if (status) { status.className = 'save-status ok'; status.textContent = '✓ Saved'; }
       setTimeout(() => { if (status) { status.className = 'save-status'; status.textContent = ''; } }, 3000);
@@ -1167,19 +1137,221 @@ function saveEntry(eid) {
     .saveEntryChanges({ entryId: eid, description: desc, billable: bill, tags });
 }
 
-// ── Utilities ──────────────────────────────────────────────────
+// ── Split time entry ──────────────────────────────────────────
+
+const splitState = {};
+
+function toggleSplit(entryId, durationMs, description, tags, billable) {
+  const container = document.getElementById('split-' + entryId);
+  if (!container) return;
+
+  if (container.innerHTML) {
+    container.innerHTML = '';
+    delete splitState[entryId];
+    return;
+  }
+
+  const STEP = 15 * 60 * 1000;
+  const maxSplit = durationMs - STEP;
+  let options = '';
+  for (let ms = STEP; ms <= maxSplit; ms += STEP) {
+    const mins = ms / 60000;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    const label = h > 0 ? `${h}h ${m > 0 ? m + 'm' : ''}`.trim() : `${m}m`;
+    options += `<option value="${ms}">${label}</option>`;
+  }
+
+  const descText = decodeEsc(description);
+  const tagsText = decodeEsc(tags);
+
+  splitState[entryId] = { resolvedTaskId: null, resolvedTaskName: null };
+
+  container.innerHTML = `<div class="split-panel" id="split-panel-${entryId}">
+    <div class="split-title">✂ Split time entry</div>
+    <div class="split-row">
+      <span class="split-label">Amount</span>
+      <select id="split-dur-${entryId}">${options}</select>
+    </div>
+    <div class="split-row">
+      <span class="split-label">Task</span>
+      <div class="task-input-wrap">
+        <input type="text" id="split-tid-${entryId}" placeholder="CTK-1234">
+        <button class="btn-lookup" onclick="lookupTask('${entryId}')">Resolve</button>
+      </div>
+    </div>
+    <div id="split-resolved-${entryId}"></div>
+    <div class="split-row">
+      <span class="split-label">Desc</span>
+      <textarea rows="1" id="split-desc-${entryId}">${esc(descText)}</textarea>
+    </div>
+    <div class="split-row">
+      <span class="split-label">Tags</span>
+      <input type="text" id="split-tags-${entryId}" value="${esc(tagsText)}" placeholder="tag1, tag2">
+    </div>
+    <div class="split-row">
+      <span class="split-label">Bill.</span>
+      <label class="toggle">
+        <input type="checkbox" id="split-bill-${entryId}" ${billable ? 'checked' : ''}>
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </label>
+    </div>
+    <div class="split-actions">
+      <button class="btn-split-save" id="split-save-${entryId}" disabled onclick="executeSplit('${entryId}')">Split &amp; Save</button>
+      <button class="btn-split-cancel" onclick="toggleSplit('${entryId}')">Cancel</button>
+      <span class="split-status" id="split-status-${entryId}"></span>
+    </div>
+  </div>`;
+}
+
+function lookupTask(entryId) {
+  const input = document.getElementById('split-tid-' + entryId);
+  const resolvedDiv = document.getElementById('split-resolved-' + entryId);
+  const saveBtn = document.getElementById('split-save-' + entryId);
+  const customId = (input.value || '').trim();
+
+  if (!customId) { resolvedDiv.innerHTML = '<div class="resolve-err">Enter a task ID</div>'; return; }
+
+  resolvedDiv.innerHTML = '<span style="font-size:11px;color:var(--muted)">Resolving…</span>';
+  saveBtn.disabled = true;
+
+  google.script.run
+    .withSuccessHandler(result => {
+      splitState[entryId] = { resolvedTaskId: result.taskId, resolvedTaskName: result.taskName };
+      resolvedDiv.innerHTML = `<div class="resolved-task">✓ <span class="resolved-name">${esc(result.taskName)}</span></div>`;
+      saveBtn.disabled = false;
+    })
+    .withFailureHandler(err => {
+      splitState[entryId] = { resolvedTaskId: null, resolvedTaskName: null };
+      resolvedDiv.innerHTML = `<div class="resolve-err">✗ ${esc(err.message)}</div>`;
+      saveBtn.disabled = true;
+    })
+    .lookupTaskByCustomId(customId);
+}
+
+function executeSplit(entryId) {
+  const ss = splitState[entryId];
+  if (!ss || !ss.resolvedTaskId) return;
+
+  const splitMs     = Number(document.getElementById('split-dur-' + entryId).value);
+  const description = document.getElementById('split-desc-' + entryId).value;
+  const tagsRaw     = document.getElementById('split-tags-' + entryId).value || '';
+  const tags        = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
+  const billable    = document.getElementById('split-bill-' + entryId).checked;
+
+  const saveBtn  = document.getElementById('split-save-' + entryId);
+  const statusEl = document.getElementById('split-status-' + entryId);
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Splitting…';
+  statusEl.className = 'split-status';
+  statusEl.textContent = '';
+
+  google.script.run
+    .withSuccessHandler(() => {
+      statusEl.className = 'split-status ok';
+      statusEl.textContent = '✓ Split complete';
+      saveBtn.textContent = 'Split & Save';
+      const dayKey = state.selectedDayKey;
+      const dayIdx = DAY_KEYS.indexOf(dayKey);
+      google.script.run
+        .withSuccessHandler(data => {
+          state.weekData = data;
+          renderTimeScreen();
+          if (dayKey !== null && dayIdx >= 0) openDayPanel(dayKey, dayIdx);
+        })
+        .withFailureHandler(() => {})
+        .getDeveloperWeekData(state.selectedUser.id, state.weekStartMs);
+    })
+    .withFailureHandler(err => {
+      statusEl.className = 'split-status err';
+      statusEl.textContent = '✗ ' + err.message;
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Split & Save';
+    })
+    .splitTimeEntry({
+      entryId,
+      splitMs,
+      newTaskId:     ss.resolvedTaskId,
+      newDescription: description,
+      newBillable:   billable,
+      newTags:       tags,
+      userId:        state.selectedUser?.id,
+    });
+}
+
+function decodeEsc(str) {
+  const el = document.createElement('div');
+  el.innerHTML = str || '';
+  return el.textContent || '';
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function mondayOfWeek(d) {
+  const day = d.getDay();
+  const diff = (day === 0) ? -6 : 1 - day;
+  const mon = new Date(d);
+  mon.setDate(d.getDate() + diff);
+  mon.setHours(0,0,0,0);
+  return mon;
+}
+
+function shiftWeekDate(startMs, delta) {
+  return startMs + delta * 7 * 24 * 60 * 60 * 1000;
+}
+
+function formatWeekLabel(startMs) {
+  const s = new Date(startMs);
+  const e = new Date(startMs + 6 * 24 * 60 * 60 * 1000);
+  const fmt = d => d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  return fmt(s) + ' – ' + fmt(e) + ', ' + e.getFullYear();
+}
+
+function formatDayHeader(startMs, idx) {
+  const d = new Date(startMs + idx * 24 * 60 * 60 * 1000);
+  return DAY_NAMES[idx] + ' ' + d.getDate();
+}
+
+function updateWeekLabel() {
+  document.getElementById('weekLabel').textContent = formatWeekLabel(state.weekStartMs);
+}
+
 function msToDayKey(ms) {
-  const d = new Date(ms);
-  return ['sun','mon','tue','wed','thu','fri','sat'][d.getDay()];
+  return ['sun','mon','tue','wed','thu','fri','sat'][new Date(ms).getDay()];
+}
+
+function hourCell(hrs, isWeekend) {
+  if (hrs === 0) {
+    return isWeekend
+      ? `<span class="hour-cell cell-empty">—</span>`
+      : `<span class="hour-cell cell-gray">0h</span>`;
+  }
+  const label = hrs.toFixed(1) + 'h';
+  if (isWeekend) return `<span class="hour-cell cell-empty">${label}</span>`;
+  let cls;
+  if (hrs >= 7 && hrs <= 9)      cls = 'cell-green';
+  else if ((hrs >= 4 && hrs < 7) || (hrs > 9 && hrs <= 10)) cls = 'cell-yellow';
+  else cls = 'cell-red';
+  return `<span class="hour-cell ${cls}">${label}</span>`;
+}
+
+function totalCell(hrs, target) {
+  const label = hrs.toFixed(1) + 'h';
+  if (hrs === 0) return `<span class="total-cell cell-gray">${label}</span>`;
+  return `<span class="total-cell ${totalColorClass(hrs, target)}">${label}</span>`;
+}
+
+function totalColorClass(hrs, target) {
+  if (hrs >= target * 0.9 && hrs <= target * 1.1)  return 'cell-green';
+  if ((hrs >= target * 0.6 && hrs < target * 0.9) || (hrs > target * 1.1 && hrs <= target * 1.25)) return 'cell-yellow';
+  return 'cell-red';
 }
 
 function esc(str) {
   return String(str || '')
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function showLoading(msg) {

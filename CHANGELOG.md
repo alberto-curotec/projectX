@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.1] — 2026-06-01
+
+### Fixed
+- Fixed custom task ID lookup using the correct ClickUp API endpoint (`/task/{custom_id}?custom_task_ids=true&team_id=...`) — previous version used a non-existent endpoint format
+
+---
+
+## [1.4.0] — 2026-06-01
+
+### Added
+- **Custom task IDs**: Entry rows now show the ClickUp custom ID (e.g. `CTK-1234`) instead of the internal numeric ID
+- **Split time entry**: Entries ≥ 30 minutes show a ✂ Split button that expands an inline panel
+  - Duration dropdown in 15-minute intervals (from 15 min up to duration − 15 min)
+  - Task lookup by custom ID with live resolution showing task name for confirmation
+  - Description, tags, and billable flag pre-populated from the original entry, fully editable
+  - On save: reduces the original entry by the split amount and creates a new entry on the target task
+  - Start/end times are adjusted so the new entry occupies the tail end of the original time block
+  - Tags synced to the new entry via the ClickUp tags endpoint
+  - Panel auto-refreshes after a successful split to show updated durations
+
+### Changed
+- `formatEntry` now includes `customId` (from `task.custom_id`) and `end` timestamp
+- Entry meta badge displays custom ID when available, falls back to internal task ID
+
+### Backend (Code.gs)
+- New function `lookupTaskByCustomId(customId)` — resolves a custom task ID to `{ taskId, taskName, customId }` via the ClickUp task endpoint with `custom_task_ids=true`
+- New function `splitTimeEntry(payload)` — orchestrates the split: fetches original entry, PUTs reduced duration, POSTs new entry on target task, syncs tags
+
+---
+
 ## [1.1.0] — 2026-05-29
 
 ### Changed
