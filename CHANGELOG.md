@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.2] — 2026-06-11
+
+### Added
+- Favorite star on the developer summary bar (time screen) — reflects current favorite status and toggles add/remove on click without leaving the screen
+
+---
+
+## [1.6.1] — 2026-06-11
+
+### Changed
+- Description field auto-resizes to fit content on render and grows as you type, so multi-line entries are fully visible without scrolling
+
+---
+
 ## [1.6.0] — 2026-06-11
 
 ### Changed

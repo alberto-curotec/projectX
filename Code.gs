@@ -1,6 +1,6 @@
 // ============================================================
 // ClickUp Time by Developer — Apps Script Web App
-// Version: 1.6.0
+// Version: 1.6.2
 // ============================================================
 
 // ── Spreadsheet pointer (not a secret — just a pointer) ──────
