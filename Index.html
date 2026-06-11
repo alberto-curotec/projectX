@@ -467,6 +467,11 @@
     font-family: 'DM Mono', monospace;
     font-size: 12px; font-weight: 500;
     white-space: nowrap; padding-top: 2px;
+    text-align: right;
+  }
+  .entry-start {
+    font-size: 10px; color: var(--muted);
+    font-weight: 400; margin-bottom: 2px;
   }
 
   .entry-fields { display: flex; flex-direction: column; gap: 6px; }
@@ -771,6 +776,7 @@ const state = {
   weekStartMs:   mondayOfWeek(new Date()).getTime(),
   weekData:      null,          // { byDay, entries, targets, weekStartMs }
   selectedDayKey: null,
+  teamId:        null,             // ClickUp team ID (for task URLs)
 };
 
 // ── Boot ───────────────────────────────────────────────────────
@@ -782,6 +788,7 @@ document.getElementById('btnToday').addEventListener('click', () => {
 });
 
 loadMembers();
+google.script.run.withSuccessHandler(id => { state.teamId = id; }).getTeamId();
 
 // ── Screen routing ─────────────────────────────────────────────
 function showListScreen() {
@@ -996,7 +1003,9 @@ function openDayPanel(dayKey, dayIdx) {
   state.selectedDayKey = dayKey;
   renderTimeScreen(); // re-render to highlight selected cell
 
-  const entries = state.weekData.entries.filter(e => msToDayKey(e.start) === dayKey);
+  const entries = state.weekData.entries
+    .filter(e => msToDayKey(e.start) === dayKey)
+    .sort((a, b) => a.start - b.start);
   const date    = new Date(state.weekStartMs + dayIdx * 24 * 60 * 60 * 1000);
   const label   = DAY_NAMES[dayIdx] + ', ' + date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
 
@@ -1032,12 +1041,11 @@ function renderEntryRow(e) {
   const hrs = (e.durationMs / 3600000).toFixed(2) + 'h';
   const tagsVal = (e.tags || []).join(', ');
   const displayId = e.customId || e.taskId;
-  const taskUrl = displayId ? `https://app.clickup.com/t/${encodeURIComponent(displayId)}` : '';
   const canSplit = e.durationMs >= 1800000; // >= 30 min
   return `<div class="entry-row" id="row-${e.id}">
     <div>
       <div class="entry-meta">
-        ${displayId ? `<span class="task-id" onclick="window.open('${taskUrl}','_blank')" title="Open in ClickUp">${esc(displayId)}</span>` : ''}
+        ${displayId ? `<span class="task-id" onclick="openTask('${esc(displayId)}')" title="Open in ClickUp">${esc(displayId)}</span>` : ''}
         <span class="task-name">${esc(e.taskName)}</span>
       </div>
       <div class="entry-fields">
@@ -1071,7 +1079,10 @@ function renderEntryRow(e) {
         <span class="save-status" id="status-${e.id}"></span>
       </div>
     </div>
-    <div class="entry-duration">${hrs}</div>
+    <div class="entry-duration">
+      <div class="entry-start">${formatTime(e.start)}</div>
+      ${hrs}
+    </div>
   </div>
   <div id="split-${e.id}"></div>`;
 }
@@ -1292,6 +1303,18 @@ function decodeEsc(str) {
 }
 
 // ── Helpers ────────────────────────────────────────────────────
+
+function openTask(customId) {
+  if (customId && state.teamId) {
+    window.open('https://app.clickup.com/t/' + state.teamId + '/' + encodeURIComponent(customId), '_blank');
+  }
+}
+
+function formatTime(ms) {
+  const d = new Date(ms);
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
 function mondayOfWeek(d) {
   const day = d.getDay();
   const diff = (day === 0) ? -6 : 1 - day;

@@ -1,6 +1,6 @@
 // ============================================================
 // ClickUp Time by Developer — Apps Script Web App
-// Version: 1.5.0
+// Version: 1.6.0
 // ============================================================
 
 // ── Spreadsheet pointer (not a secret — just a pointer) ──────
@@ -56,6 +56,10 @@ function getFavorites() {
 function setFavorites(ids) {
   PropertiesService.getUserProperties().setProperty('favorites', JSON.stringify(ids));
   return ids;
+}
+
+function getTeamId() {
+  return getConfig().TEAM_ID;
 }
 
 function toggleFavorite(userId) {
@@ -134,14 +138,17 @@ function getMembers() {
   const team  = teams.find(t => t.id === cfg.TEAM_ID) || teams[0];
   if (!team) throw new Error('Team not found. Check CLICKUP_TEAM_ID in your Config sheet.');
 
-  return (team.members || []).map(m => ({
-    id:         String(m.user.id),
-    name:       m.user.username || m.user.email,
-    email:      m.user.email,
-    avatar:     m.user.profilePicture || null,
-    initials:   initials(m.user.username || m.user.email),
-    isFavorite: favs.includes(String(m.user.id)),
-  }));
+  return (team.members || [])
+    .filter(m => Number(m.user.role) !== 4)  // exclude guest role
+    .map(m => ({
+      id:         String(m.user.id),
+      name:       m.user.username || m.user.email,
+      email:      m.user.email,
+      avatar:     m.user.profilePicture || null,
+      initials:   initials(m.user.username || m.user.email),
+      isFavorite: favs.includes(String(m.user.id)),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function initials(name) {

@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] — 2026-06-11
+
+### Changed
+- **Team list**: Guest users (ClickUp role 4) are now excluded from the developer list
+- **Team list**: Members are sorted alphabetically by name (favorites still pinned at top, now alphabetical within their group)
+- **Day panel**: Entries are sorted by start time, oldest first
+- **Day panel**: Each entry now shows its start time (12-hour format) above the duration on the right
+
+---
+
+## [1.5.1] — 2026-06-10
+
+### Fixed
+- Task ID links now include the team ID in the URL path (`/t/{teamId}/{customId}`), matching the ClickUp URL format — previously the link was missing the team ID and returned "page unavailable"
+
+### Added
+- New `getTeamId()` backend function; frontend fetches it once at boot and stores in state for building task URLs
+
+---
+
 ## [1.5.0] — 2026-06-10
 
 ### Changed
